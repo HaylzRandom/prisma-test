@@ -1,0 +1,76 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Movie {
+  id           Int            @id @default(autoincrement())
+  title        String         @unique
+  description  String
+  trailerURL   String
+  MovieReviews MovieReviews[]
+  Category     Category?      @relation(fields: [categoryId], references: [id])
+  categoryId   Int?
+  List         List?          @relation(fields: [listId], references: [id])
+  listId       Int?
+}
+
+model MovieReviews {
+  id        Int      @id @default(autoincrement())
+  title     String
+  body      String
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  movie     Movie    @relation(fields: [movieId], references: [id])
+  movieId   Int
+}
+
+model User {
+  id           Int            @id @default(autoincrement())
+  email        String         @unique
+  avatarURL    String?
+  password     String
+  username     String         @unique
+  role         Role           @default(USER)
+  MovieReviews MovieReviews[]
+  ChatRooms    ChatRooms[]
+  List         List[]
+}
+
+model ChatRooms {
+  id       Int     @id @default(autoincrement())
+  title    String
+  owner    User    @relation(fields: [ownerId], references: [id])
+  ownerId  Int
+  category String?
+  private  Boolean
+}
+
+model List {
+  id      Int     @id @default(autoincrement())
+  title   String
+  owner   User    @relation(fields: [ownerId], references: [id])
+  ownerId Int
+  private Boolean
+  movies  Movie[]
+}
+
+model Category {
+  id     Int     @id @default(autoincrement())
+  name   String
+  movies Movie[]
+}
+
+enum Role {
+  USER
+  ADMIN
+}
